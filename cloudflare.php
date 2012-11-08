@@ -2,8 +2,8 @@
 /*
 Plugin Name: CloudFlare 汉化版
 Plugin URI: http://www.cloudflare.com/wiki/CloudFlareWordPressPlugin
-Description: CloudFlare 帮助您修复评论者的真实 IP 地址、保护网站不受垃圾信息干扰、优化网站数据库。<strong>注意</strong>：汉化版插件无法自动更新，请访问<a href="http://www.niaoer.org/535.html" href="_blank">鸟儿的博客</a>并手动下载后更新。
-Version: 1.3.5
+Description: CloudFlare 为您修复访问者的真实 IP 地址，保护网站不受垃圾信息干扰。<strong>注意</strong>：汉化版插件无法自动更新，请访问<a href="http://www.niaoer.org/535.html" href="_blank">鸟儿的博客</a>并手动下载后更新。
+Version: 1.3.7
 Author: Ian Pye, Jerome Chen, James Greene (CloudFlare Team)
 License: GPLv2
 */
@@ -26,7 +26,7 @@ Plugin adapted from the Akismet WP plugin.
 
 */	
 
-define('CLOUDFLARE_VERSION', '1.3.5');
+define('CLOUDFLARE_VERSION', '1.3.7');
 require_once("ip_in_range.php");
 
 // Make sure we don't expose any info if called directly
@@ -101,7 +101,7 @@ function load_cloudflare_keys () {
 
 function cloudflare_conf() {
     if ( function_exists('current_user_can') && !current_user_can('manage_options') )
-        die(__('诶哟，出错了！'));
+        die(__('诶呀，出错了！'));
     global $cloudflare_api_key, $cloudflare_api_email, $is_cf;
     global $wpdb;
 
@@ -128,11 +128,10 @@ function cloudflare_conf() {
     $db_results = array();
                
 	if ( isset($_POST['submit']) 
-         && !($_POST['optimize']) 
          && check_admin_referer('cloudflare-db-api','cloudflare-db-api-nonce') ) {
         
 		if ( function_exists('current_user_can') && !current_user_can('manage_options') ) {
-			die(__('诶哟，出错了！'));
+			die(__('诶呀，出错了！'));
         }
 
 		$key = $_POST['key'];
@@ -181,76 +180,46 @@ function cloudflare_conf() {
             $messages['dev_mode_on'] = array('color' => '2d2', 'text' => __('开发模式已开启！'));
             $messages['dev_mode_off'] = array('color' => 'aa0', 'text' => __('开发模式已关闭！'));
         }
-    } else if ( isset($_POST['submit']) 
-                && isset($_POST['optimize'])
-                && check_admin_referer('cloudflare-db-opt','cloudflare-db-opt-nonce')) {
-
-        update_option('cloudflare_api_db_last_run', time());
-        if(current_user_can('administrator')) {
-            remove_action('admin_notices', 'cloudflare_warning');
-            $tables = $wpdb->get_col("SHOW TABLES");
-            foreach($tables as $table_name) {
-                $optimize = $wpdb->query("OPTIMIZE TABLE `$table_name`");
-                $analyze = $wpdb->query("ANALYZE TABLE `$table_name`");
-                if (!$optimize || !$analyze) {
-                    $db_results[] = "优化数据表 $table_name 失败";
-                }
-            }
-            if (count($db_results) == 0) {
-                $db_results[] = "数据库优化已完成";
-            }
-        } else {
-            $db_results[] = "您的账户没有权限操作数据库 \"manage_database\"，请使用数据库管理员账户登陆后重试！";
-        }
     }
-
     ?>
-    <?php if ( !empty($_POST['submit'] ) && !($_POST['optimize']) ) { ?>
-    <div id="message" class="updated fade"><p><strong><?php _e('设置已更新') ?></strong></p></div>
-    <?php } else if ( isset($_POST['submit']) && isset($_POST['optimize']) ) {
-    foreach ($db_results as $res) {
-        ?><div id="message" class="updated fade"><p><strong><?php _e($res) ?></strong></p></div><?php
-    }
-} 
-    ?>
+    <?php if ( !empty($_POST['submit'] )) { ?>
+    <div id="message" class="updated fade"><p><strong><?php _e('设置已更新。') ?></strong></p></div>
+    <?php } ?>
     <div class="wrap">
 
     <?php if ($is_cf) { ?>
-        <h3>您正在使用 CloudFlare！</h3>
+        <h3>You are currently using CloudFlare!</h3>
     <?php } ?>
 
-    <h4><?php _e('CLOUDFLARE WORDPRESS 插件:'); ?></h4>
+    <h4><?php _e('CLOUDFLARE WORDPRESS PLUGIN:'); ?></h4>
         <?php //    <div class="narrow"> ?>
 
 CloudFlare 是一款专门为 WordPress 开发的插件，它的功能主要有：
 <ol>
-<li>修正评论者的 IP 地址</li>
+<li>修正访问者的 IP 地址</li>
 <li>保护您的网站不受垃圾信息干扰</li>
-<li>优化您的网站数据库（可选）</li>
 </ol>
 
 <h4>适用版本：</h4>
 
-目前兼容 WordPress 2.8.6 到 WordPress 3.4，如果您正在使用的版本低于 2.8.6，将无法使用本插件，建议您升级到最新版本的 WordPress。
+兼容 WordPress 2.8.6 至最新版，如果您正在使用的版本低于 2.8.6，将无法使用本插件，建议您升级到最新版本的 WordPress。
 
 <h4>说明：</h4>
 
 <ol>
-<li>由于 CloudFlare 使用反向代理的方式导致评论者的真实 IP 地址变成了 CloudFlare 的 IP 地址，所以该插件能将 IP 地址修正为真实地址。</li>
+<li>由于 CloudFlare 使用反向代理的方式导致访问者的真实 IP 地址变成了 CloudFlare 的 IP 地址，本插件能将 IP 地址修正为真实地址。</li>
  
-<li>使用数据库优化工具时，您的网站暂时无法添加、修改文章或页面，评论功能也暂时无法使用，直到优化结束后恢复。一般来说优化过程使用的时间非常短暂。</li>
-
 <li>如果您将某条评论标记为垃圾内容，那么这条评论内容将会发送到 CloudFlare，帮助您的网站得到更好的保护。</li>
 
 <li>我们强烈推荐 CloudFlare 用户安装此插件。</li>
 
-<li>注意：本插件与 Akismet 和 W3 Total Cache 兼容，我们推荐您继续使用它们。</li> 
+<li>注意：本插件与 Akismet 和 W3 Total Cache 兼容，您可以放心地使用它们。</li> 
 
 </ol>
 
 <h4>更多：</h4>
 
-<a href="http://www.cloudflare.com/" href="_blank">CloudFlare 官方网站</a>
+<a href="http://www.cloudflare.com/">CloudFlare 官方网站</a>.
 
     <?php 
         if ($curl_installed) {
@@ -264,15 +233,15 @@ CloudFlare 是一款专门为 WordPress 开发的插件，它的功能主要有�
     <?php wp_nonce_field('cloudflare-db-api','cloudflare-db-api-nonce'); ?>
     <?php if (get_option('cloudflare_api_key') && get_option('cloudflare_api_email')) { ?>
     <?php } else { ?> 
-        <p><?php printf(__('输入您的 API Key，获取 API Key 请登陆<a href="%1$s">CloudFlare</a>后进入 \'Account\' 查看。'), 'https://www.cloudflare.com/my-account.html'); ?></p>
+        <p><?php printf(__('输入您的 API Key，获取 API Key 请登陆 <a href="%1$s">CloudFlare</a> 后进入 \'Account\'.'), 'https://www.cloudflare.com/my-account.html'); ?></p>
     <?php } ?>
     <?php if ($ms) { foreach ( $ms as $m ) { ?>
     <p style="padding: .5em; color: #<?php echo $messages[$m]['color']; ?>; font-weight: bold;"><?php echo $messages[$m]['text']; ?></p>
     <?php } } ?>
     <h3><label for="key"><?php _e('CloudFlare API Key'); ?></label></h3>
-    <p><input id="key" name="key" type="text" size="50" maxlength="48" value="<?php echo get_option('cloudflare_api_key'); ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" /> (<?php _e('<a href="https://www.cloudflare.com/my-account.html" target="_blank">获取 API Key</a>'); ?>)</p>
+    <p><input id="key" name="key" type="text" size="50" maxlength="48" value="<?php echo get_option('cloudflare_api_key'); ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" /> (<?php _e('<a href="https://www.cloudflare.com/my-account.html">获取 API Key</a>'); ?>)</p>
     <h3><label for="email"><?php _e('CloudFlare 账户邮箱'); ?></label></h3>
-    <p><input id="email" name="email" type="text" size="50" maxlength="48" value="<?php echo get_option('cloudflare_api_email'); ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" /> (<?php _e('<a href="https://www.cloudflare.com/my-account.html" target="_blank">获取邮箱</a>'); ?>)
+    <p><input id="email" name="email" type="text" size="50" maxlength="48" value="<?php echo get_option('cloudflare_api_email'); ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" /> (<?php _e('<a href="https://www.cloudflare.com/my-account.html">获取邮箱</a>'); ?>)
     <h3><label for="dev_mode"><?php _e('开发模式'); ?></label> <span style="font-size:9pt;">(<a href="http://support.cloudflare.com/kb/what-do-the-various-cloudflare-settings-do/what-does-cloudflare-development-mode-mean" " target="_blank">这是什么？</a>)</span></h3>
 
     <? if ($curl_installed) { ?>
@@ -281,20 +250,11 @@ CloudFlare 是一款专门为 WordPress 开发的插件，它的功能主要有�
     <input type="radio" name="dev_mode" value="1" <? if ($dev_mode == "on") echo "checked"; ?>> 开启
     </div>
     <? } else { ?>
-    You cannot toggle development mode because cURL is not installed for your domain.  Please contact a server administrator for assistance with installing cURL.
+    抱歉，由于服务器未安装 cURL 模块，无法切换到“开发模式”，请联系空间服务商或自行安装该模块。
     <? } ?>
     
     </p>
     <p class="submit"><input type="submit" name="submit" value="<?php _e('更新设置 &raquo;'); ?>" /></p>
-    </form>
-
-    <form action="" method="post" id="cloudflare-db">
-    <?php wp_nonce_field('cloudflare-db-opt','cloudflare-db-opt-nonce'); ?>
-    <input type="hidden" name="optimize" value="1" />
-
-    <h4><label for="optimize_db"><?php _e('数据库优化（可选）：'); ?></label>
-    <input type="submit" name="submit" value="<?php _e('优化数据库'); ?>" /> (<?php _e('<a href="http://www.cloudflare.com/wiki/WordPressDBOptimizer">这是什么？</a>'); ?>)</h4>
-
     </form>
 
         <?php //    </div> ?>
@@ -305,42 +265,7 @@ CloudFlare 是一款专门为 WordPress 开发的插件，它的功能主要有�
 function cloudflare_admin_warnings() {
     
     global $cloudflare_api_key, $cloudflare_api_email; 
-    load_cloudflare_keys();
-
-    /**
-	if ( !get_option('cloudflare_api_key_set_once') && !$cloudflare_api_key && !isset($_POST['submit']) ) {
-		function cloudflare_warning() {
-			echo "
-			<div id='cloudflare-warning' class='updated fade'><p><strong>".__('CloudFlare 插件安装完成，')."</strong> ".sprintf(__('您还需 <a href="%1$s">输入您的 CloudFlare API key</a> 后才可使用'), "plugins.php?page=cloudflare")。"</p></div>
-			";
-		}
-		add_action('admin_notices', 'cloudflare_warning');
-		return;
-	} else if ( !get_option('cloudflare_api_key_set_once') && !$cloudflare_api_email && !isset($_POST['submit']) ) {
-		function cloudflare_warning() {
-			echo "
-			<div id='cloudflare-warning' class='updated fade'><p><strong>".__('CloudFlare 插件安装完成，')."</strong> ".sprintf(__('您还需<a href="%1$s">输入您的 CloudFlare 账户邮箱</a> 后才可使用。'), "plugins.php?page=cloudflare")."</p></div>
-			";
-		}
-		add_action('admin_notices', 'cloudflare_warning');
-		return;
-	} 
-    */
-    
-    // Check to see if they should optimized their DB
-    $last_run_time = (int)get_option('cloudflare_api_db_last_run');
-    if (!$last_run_time) {
-        $last_run_time = time();
-    }
-    if (time() - $last_run_time > 5259487) { // 2 Months (avg)
-        function cloudflare_warning() {
-			echo "
-			<div id='cloudflare-warning' class='updated fade'><p><strong>".__('您的数据库应该优化一下')."</strong> ".sprintf(__('我们建议您每两个月使用 <a href="%1$s">CloudFlare 数据库优化工具</a>。'), "plugins.php?page=cloudflare")."</p></div>
-			";
-		}
-		add_action('admin_notices', 'cloudflare_warning');
-		return;
-    }
+    load_cloudflare_keys();    
 }
 
 // Now actually allow CF to see when a comment is approved/not-approved.
