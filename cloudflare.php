@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: CloudFlare 汉化版
+Plugin Name: CloudFlare
 Plugin URI: http://www.cloudflare.com/wiki/CloudFlareWordPressPlugin
-Description: CloudFlare 为您修复访问者的真实 IP 地址，保护网站不受垃圾信息干扰。<strong>注意</strong>：汉化版插件无法自动更新，请访问<a href="http://www.niaoer.org/535.html" href="_blank">鸟儿的博客</a>并手动下载后更新。
-Version: 1.3.7
+Description: CloudFlare 插件将您的博客与 CloudFlare 平台完美整合。<strong>注意</strong>：汉化版插件无法自动更新，请访问<a href="http://www.niaoer.org/535.html" href="_blank">鸟儿的博客</a>并手动下载后更新。
+Version: 1.3.11
 Author: Ian Pye, Jerome Chen, James Greene (CloudFlare Team)
 License: GPLv2
 */
@@ -26,12 +26,12 @@ Plugin adapted from the Akismet WP plugin.
 
 */	
 
-define('CLOUDFLARE_VERSION', '1.3.7');
+define('CLOUDFLARE_VERSION', '1.3.10');
 require_once("ip_in_range.php");
 
 // Make sure we don't expose any info if called directly
 if ( !function_exists( 'add_action' ) ) {
-	echo "你好！我只是个插件，请不要直接调用。";
+	echo "你好！我只是个插件，请不要直接调用我哦。";
 	exit;
 }
 
@@ -41,10 +41,10 @@ function cloudflare_init() {
     $cf_api_host = "ssl://www.cloudflare.com";
     $cf_api_port = 443;
     
-    $is_cf = ($_SERVER["HTTP_CF_CONNECTING_IP"])? TRUE: FALSE;    
+    $is_cf = (isset($_SERVER["HTTP_CF_CONNECTING_IP"]))? TRUE: FALSE;    
 
     if (strpos($_SERVER["REMOTE_ADDR"], ":") === FALSE) {
-        $cf_ip_ranges = array("204.93.240.0/24", "204.93.177.0/24", "199.27.128.0/21", "173.245.48.0/20", "103.22.200.0/22", "141.101.64.0/18", "108.162.192.0/18","190.93.240.1/20");
+        $cf_ip_ranges = array("204.93.240.0/24","204.93.177.0/24","199.27.128.0/21","173.245.48.0/20","103.21.244.0/22","103.22.200.0/22","103.31.4.0/22","141.101.64.0/18","108.162.192.0/18","190.93.240.0/20","188.114.96.0/20","197.234.240.0/22","198.41.128.0/17","162.158.0.0/15");
         // IPV4: Update the REMOTE_ADDR value if the current REMOTE_ADDR value is in the specified range.
         foreach ($cf_ip_ranges as $range) {
             if (ipv4_in_range($_SERVER["REMOTE_ADDR"], $range)) {
@@ -101,7 +101,7 @@ function load_cloudflare_keys () {
 
 function cloudflare_conf() {
     if ( function_exists('current_user_can') && !current_user_can('manage_options') )
-        die(__('诶呀，出错了！'));
+        die(__('哎呀，出错了！'));
     global $cloudflare_api_key, $cloudflare_api_email, $is_cf;
     global $wpdb;
 
@@ -131,7 +131,7 @@ function cloudflare_conf() {
          && check_admin_referer('cloudflare-db-api','cloudflare-db-api-nonce') ) {
         
 		if ( function_exists('current_user_can') && !current_user_can('manage_options') ) {
-			die(__('诶呀，出错了！'));
+			die(__('哎呀，出错了！'));
         }
 
 		$key = $_POST['key'];
@@ -183,15 +183,15 @@ function cloudflare_conf() {
     }
     ?>
     <?php if ( !empty($_POST['submit'] )) { ?>
-    <div id="message" class="updated fade"><p><strong><?php _e('设置已更新。') ?></strong></p></div>
+    <div id="message" class="updated fade"><p><strong><?php _e('设置已更新') ?></strong></p></div>
     <?php } ?>
     <div class="wrap">
 
     <?php if ($is_cf) { ?>
-        <h3>You are currently using CloudFlare!</h3>
+        <h3>您正在使用 CloudFlare！</h3>
     <?php } ?>
 
-    <h4><?php _e('CLOUDFLARE WORDPRESS PLUGIN:'); ?></h4>
+    <h4><?php _e('CLOUDFLARE WORDPRESS 插件：'); ?></h4>
         <?php //    <div class="narrow"> ?>
 
 CloudFlare 是一款专门为 WordPress 开发的插件，它的功能主要有：
@@ -241,17 +241,17 @@ CloudFlare 是一款专门为 WordPress 开发的插件，它的功能主要有�
     <h3><label for="key"><?php _e('CloudFlare API Key'); ?></label></h3>
     <p><input id="key" name="key" type="text" size="50" maxlength="48" value="<?php echo get_option('cloudflare_api_key'); ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" /> (<?php _e('<a href="https://www.cloudflare.com/my-account.html">获取 API Key</a>'); ?>)</p>
     <h3><label for="email"><?php _e('CloudFlare 账户邮箱'); ?></label></h3>
-    <p><input id="email" name="email" type="text" size="50" maxlength="48" value="<?php echo get_option('cloudflare_api_email'); ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" /> (<?php _e('<a href="https://www.cloudflare.com/my-account.html">获取邮箱</a>'); ?>)
-    <h3><label for="dev_mode"><?php _e('开发模式'); ?></label> <span style="font-size:9pt;">(<a href="http://support.cloudflare.com/kb/what-do-the-various-cloudflare-settings-do/what-does-cloudflare-development-mode-mean" " target="_blank">这是什么？</a>)</span></h3>
+    <p><input id="email" name="email" type="text" size="50" maxlength="48" value="<?php echo get_option('cloudflare_api_email'); ?>" style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;" /> (<?php _e('<a href="https://www.cloudflare.com/my-account.html">获取邮箱地址</a>'); ?>)
+    <h3><label for="dev_mode"><?php _e('开发模式'); ?></label> <span style="font-size:9pt;">(<a href="https://support.cloudflare.com/entries/22280726-what-does-cloudflare-development-mode-mean" " target="_blank">这是什么？</a>)</span></h3>
 
-    <? if ($curl_installed) { ?>
+    <?php if ($curl_installed) { ?>
     <div style="font-family: 'Courier New', Courier, mono; font-size: 1.5em;">
     <input type="radio" name="dev_mode" value="0" <? if ($dev_mode == "off") echo "checked"; ?>> 关闭
-    <input type="radio" name="dev_mode" value="1" <? if ($dev_mode == "on") echo "checked"; ?>> 开启
+    <input type="radio" name="dev_mode" value="1" <? if ($dev_mode == "on") echo "checked"; ?>> 打开
     </div>
-    <? } else { ?>
-    抱歉，由于服务器未安装 cURL 模块，无法切换到“开发模式”，请联系空间服务商或自行安装该模块。
-    <? } ?>
+    <?php } else { ?>
+    抱歉，CloudFlare 检测到您的服务器未安装 cURL 模块，无法切换到“开发模式”，请联系空间服务商或自行安装该模块。
+    <?php } ?>
     
     </p>
     <p class="submit"><input type="submit" name="submit" value="<?php _e('更新设置 &raquo;'); ?>" /></p>
